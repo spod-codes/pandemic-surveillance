@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandemic Surveillance System</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('main.index') }}" class="nav-brand">
+                <i class='bx bx-radar bx-burst' style='color:#00e5ff' ></i>
+                Pandemic<span>Surveillance</span>
+            </a>
+            
+            <ul class="nav-menu">
+                {% if current_user.is_authenticated %}
+                    <li>
+                        <a href="{{ url_for('main.dashboard') }}" class="nav-link">
+                            <i class='bx bxs-dashboard'></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.view_map') }}" class="nav-link">
+                            <i class='bx bx-map-alt' ></i> Outbreak Map
+                        </a>
+                    </li>
+                    {% if current_user.is_admin() %}
+                        <li>
+                            <a href="{{ url_for('admin.dashboard') }}" class="nav-link text-admin">
+                                <i class='bx bx-shield-quarter'></i> Admin Panel
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="user-profile">
+                        <span class="user-name">{{ current_user.username }}</span>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm">Logout</a>
+                    </li>
+                {% else %}
+                    <li><a href="{{ url_for('auth.login') }}" class="nav-link">Login</a></li>
+                    <li><a href="{{ url_for('auth.register') }}" class="btn btn-primary">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class='bx bx-info-circle'></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 Global Pandemic & Disease Surveillance Network.</p>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    #outbreak-map {
+        height: 70vh;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        border: 1px solid rgba(0, 229, 255, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="page-header">
+        <div>
+            <h2><i class='bx bx-globe'></i> Global Outbreak Map</h2>
+            <p>Live geospatial clustering of reported epidemiological incidents.</p>
+        </div>
+    </div>
+
+    <div class="glass-panel p-2">
+        <div id="outbreak-map"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Init map centered on India (based on our seed data)
+        var map = L.map('outbreak-map').setView([20.5937, 78.9629], 5);
+
+        // Dark map tiles (CartoDB Dark Matter)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Fetch location stats and draw circles
+        fetch('/api/reports/by-location')
+            .then(res => res.json())
+            .then(data => {
+                for(let i=0; i<data.labels.length; i++) {
+                    const city = data.labels[i];
+                    const count = data.data[i];
+                    
+                    // Use db coordinates or fallback to 0,0
+                    const lat = data.latitudes[i] !== null ? data.latitudes[i] : (Math.random() * 100 - 50);
+                    const lon = data.longitudes[i] !== null ? data.longitudes[i] : (Math.random() * 180 - 90);
+                    const coords = [lat, lon];
+                    
+                    const radius = Math.min(count * 5000, 200000); // Scale logic
+                    
+                    // Color code based on count intensity
+                    let fillColor = '#00e5ff'; // defaults to mild
+                    if(count > 100) fillColor = '#ffb703'; // warning
+                    if(count > 500) fillColor = '#ff3366'; // critical
+                    
+                    L.circle(coords, {
+                        color: fillColor,
+                        fillColor: fillColor,
+                        fillOpacity: 0.5,
+                        radius: radius
+                    }).addTo(map)
+                    .bindPopup(`<b>${city}</b><br>${count.toLocaleString()} Incident Reports`);
+                }
+            });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar glass-panel">
+        <ul class="admin-menu">
+            <li><a href="{{ url_for('admin.dashboard') }}"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+            <li><a href="{{ url_for('admin.reports') }}" class="active"><i class='bx bx-file'></i> All Reports</a></li>
+            <li><a href="{{ url_for('admin.diseases') }}"><i class='bx bx-bug'></i> Disease Registry</a></li>
+            <li><a href="{{ url_for('admin.alerts') }}"><i class='bx bx-bell'></i> Alert Thresholds</a></li>
+            <li><a href="{{ url_for('admin.users') }}"><i class='bx bx-group'></i> Operators</a></li>
+            <li><a href="{{ url_for('admin.audit') }}"><i class='bx bx-history'></i> Audit Log</a></li>
+        </ul>
+    </aside>
+
+    <div class="admin-content glass-panel">
+        <div class="page-header mb-4">
+            <h2>Incident Database</h2>
+            <a href="{{ url_for('admin.export_csv') }}" class="btn btn-outline btn-sm"><i class='bx bx-export'></i> Export CSV</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Reporting Officer</th>
+                        <th>Disease</th>
+                        <th>City</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td class="text-muted">#{{ report.id }}</td>
+                        <td>{{ report.report_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ report.submitter.username }}</td>
+                        <td><strong>{{ report.disease }}</strong></td>
+                        <td>{{ report.location_city }}</td>
+                        <td><span class="badge {{ report.severity_class() }}">{{ report.severity|title }}</span></td>
+                        <td><span class="badge {{ report.status_class() }}">{{ report.status|title }}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('admin.edit_report', id=report.id) }}" class="btn btn-sm btn-outline"><i class='bx bx-edit-alt'></i></a>
+                                <form action="{{ url_for('admin.delete_report', id=report.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to completely purge this record? This action cannot be undone.');">
+                                    <button type="submit" class="btn btn-sm btn-danger"><i class='bx bx-trash'></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

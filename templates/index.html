@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="badge-pulse">Live Tracking Network</div>
+        <h1 class="hero-title">Global <span class="text-accent">Disease</span> Intelligence.</h1>
+        <p class="hero-subtitle">
+            Advanced epidemiological surveillance system for early detection, reporting, and management of outbreaks.
+        </p>
+        
+        <div class="hero-actions">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Join Surveillance Network</a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">Login Access</a>
+            {% endif %}
+            <a href="{{ url_for('main.view_map') }}" class="btn btn-glass btn-lg"><i class='bx bx-map'></i> View Live Map</a>
+        </div>
+    </div>
+    
+    <div class="hero-stats">
+        <div class="stat-card glass-panel">
+            <i class='bx bx-file-find text-accent' ></i>
+            <div class="stat-info">
+                <h3>Total Reports</h3>
+                <p id="total-reports-counter">Loading...</p>
+            </div>
+        </div>
+        <div class="stat-card glass-panel">
+            <i class='bx bx-shield-plus text-success' ></i>
+            <div class="stat-info">
+                <h3>System Status</h3>
+                <p class="text-success pulse">Monitoring Active</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="features-grid container">
+    <div class="feature-card glass-panel">
+        <div class="icon-box"><i class='bx bx-radar'></i></div>
+        <h3>Real-time Alerts</h3>
+        <p>Automated thresholds trigger immediate notifications when regional disease patterns emerge.</p>
+    </div>
+    <div class="feature-card glass-panel">
+        <div class="icon-box"><i class='bx bxs-map-alt' ></i></div>
+        <h3>Geospatial Tracking</h3>
+        <p>Visualize epidemiological cluster data with precision mapping integrations.</p>
+    </div>
+    <div class="feature-card glass-panel">
+        <div class="icon-box"><i class='bx bx-lock-alt' ></i></div>
+        <h3>Secure Auditing</h3>
+        <p>Military-grade data protection with comprehensive administrative action logging.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Fetch live stats for landing page
+    fetch('/api/stats')
+        .then(response => response.json())
+        .then(data => {
+            const el = document.getElementById('total-reports-counter');
+            let count = 0;
+            const target = data.total_reports;
+            const step = Math.max(1, Math.floor(target / 50));
+            
+            const timer = setInterval(() => {
+                count += step;
+                if(count >= target) {
+                    el.innerText = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    el.innerText = count.toLocaleString();
+                }
+            }, 30);
+        })
+        .catch(err => {
+            document.getElementById('total-reports-counter').innerText = 'Unavailable';
+        });
+</script>
+{% endblock %}

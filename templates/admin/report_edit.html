@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <aside class="admin-sidebar glass-panel">
+        <ul class="admin-menu">
+            <li><a href="{{ url_for('admin.dashboard') }}"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+            <li><a href="{{ url_for('admin.reports') }}" class="active"><i class='bx bx-file'></i> All Reports</a></li>
+            <li><a href="{{ url_for('admin.diseases') }}"><i class='bx bx-bug'></i> Disease Registry</a></li>
+            <li><a href="{{ url_for('admin.alerts') }}"><i class='bx bx-bell'></i> Alert Thresholds</a></li>
+            <li><a href="{{ url_for('admin.users') }}"><i class='bx bx-group'></i> Operators</a></li>
+            <li><a href="{{ url_for('admin.audit') }}"><i class='bx bx-history'></i> Audit Log</a></li>
+        </ul>
+    </aside>
+
+    <div class="admin-content">
+        <div class="page-header mb-4">
+            <div>
+                <h2><i class='bx bx-edit-alt'></i> Modify Incident Record</h2>
+                <p>Editing Incident #{{ report.id }}</p>
+            </div>
+            <a href="{{ url_for('admin.reports') }}" class="btn btn-outline btn-sm">Cancel</a>
+        </div>
+
+        <div class="glass-panel" style="max-width: 800px;">
+            <form method="POST">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Status Classification</label>
+                        <select name="status" class="input-warning" required>
+                            <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>Pending Review</option>
+                            <option value="verified" {% if report.status == 'verified' %}selected{% endif %}>Verified Incident</option>
+                            <option value="rejected" {% if report.status == 'rejected' %}selected{% endif %}>Rejected / False Alarm</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="dim-line mb-3">
+
+                <div class="form-row">
+                    <div class="form-group col-md-8">
+                        <label>Patient ID / Name</label>
+                        <input type="text" name="patient_name" value="{{ report.patient_name }}" required>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label>Age</label>
+                        <input type="number" name="age" value="{{ report.age }}" required min="0" max="120">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Disease Classification</label>
+                        <select name="disease" required>
+                            {% for d in diseases %}
+                                <option value="{{ d.name }}" {% if report.disease == d.name %}selected{% endif %}>{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Severity Level</label>
+                        <select name="severity" required>
+                            <option value="mild" {% if report.severity == 'mild' %}selected{% endif %}>Mild</option>
+                            <option value="moderate" {% if report.severity == 'moderate' %}selected{% endif %}>Moderate</option>
+                            <option value="severe" {% if report.severity == 'severe' %}selected{% endif %}>Severe</option>
+                            <option value="critical" {% if report.severity == 'critical' %}selected{% endif %}>Critical</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Observed Symptoms</label>
+                    <textarea name="symptoms" rows="2" required>{{ report.symptoms }}</textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>City / Municipality</label>
+                        <input type="text" name="location_city" value="{{ report.location_city }}" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>State / Province</label>
+                        <input type="text" name="location_state" value="{{ report.location_state }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Official Admin Notes <span class="text-sm text-muted">(Visible to operator)</span></label>
+                    <textarea name="notes" rows="3">{{ report.notes or '' }}</textarea>
+                </div>
+
+                <div class="form-actions mt-4">
+                    <button type="submit" class="btn btn-warning"><i class='bx bx-save'></i> Commit Modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

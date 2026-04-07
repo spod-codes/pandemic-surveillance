@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <aside class="admin-sidebar glass-panel">
+        <ul class="admin-menu">
+            <li><a href="{{ url_for('admin.dashboard') }}"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+            <li><a href="{{ url_for('admin.reports') }}"><i class='bx bx-file'></i> All Reports</a></li>
+            <li><a href="{{ url_for('admin.diseases') }}"><i class='bx bx-bug'></i> Disease Registry</a></li>
+            <li><a href="{{ url_for('admin.alerts') }}"><i class='bx bx-bell'></i> Alert Thresholds</a></li>
+            <li><a href="{{ url_for('admin.users') }}"><i class='bx bx-group'></i> Operators</a></li>
+            <li><a href="{{ url_for('admin.audit') }}" class="active"><i class='bx bx-history'></i> Audit Log</a></li>
+        </ul>
+    </aside>
+
+    <div class="admin-content glass-panel">
+        <div class="page-header mb-4">
+            <h2>System Audit Trail</h2>
+            <p class="text-muted">Immutable cryptographic record of all command-level actions.</p>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp (UTC)</th>
+                        <th>Command Auth</th>
+                        <th>Action Protocol</th>
+                        <th>Target Vector</th>
+                        <th>Action Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr class="audit-row">
+                        <td class="text-sm font-mono text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td><span class="text-accent">{{ log.admin.username }}</span></td>
+                        <td>
+                            {% if log.action == 'UPDATE' %}
+                                <span class="badge badge-moderate">UPDATE</span>
+                            {% elif log.action == 'DELETE' %}
+                                <span class="badge badge-critical">PURGE</span>
+                            {% else %}
+                                <span class="badge badge-mild">{{ log.action }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="font-mono text-sm">{{ log.target_table|upper }}#{{ log.target_id }}</td>
+                        <td class="text-sm">{{ log.details }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not logs %}
+                    <tr><td colspan="5" class="text-center text-muted">No audit records found in the database.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

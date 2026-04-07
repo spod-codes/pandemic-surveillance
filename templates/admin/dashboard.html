@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar">
+        <ul class="admin-menu">
+            <li><a href="{{ url_for('admin.dashboard') }}" class="active"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+            <li><a href="{{ url_for('admin.reports') }}"><i class='bx bx-file'></i> All Reports</a></li>
+            <li><a href="{{ url_for('admin.diseases') }}"><i class='bx bx-bug'></i> Disease Registry</a></li>
+            <li><a href="{{ url_for('admin.alerts') }}"><i class='bx bx-bell'></i> Alert Thresholds</a></li>
+            <li><a href="{{ url_for('admin.users') }}"><i class='bx bx-group'></i> Operators</a></li>
+            <li><a href="{{ url_for('admin.audit') }}"><i class='bx bx-history'></i> Audit Log</a></li>
+        </ul>
+    </aside>
+
+    <!-- Admin Content -->
+    <div class="admin-content">
+        <div class="page-header mb-4">
+            <h2>Overview</h2>
+            <a href="{{ url_for('admin.export_csv') }}" class="btn btn-primary btn-sm"><i class='bx bx-download'></i> Export Data</a>
+        </div>
+        
+        <div class="admin-kpi-grid">
+            <div class="kpi-card accent">
+                <div class="kpi-title">Total Incidents <i class='bx bx-trending-up text-accent'></i></div>
+                <div class="kpi-value">{{ "{:,}".format(total_reports) }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Pending Verification <i class='bx bx-time-five'></i></div>
+                <div class="kpi-value">{{ "{:,}".format(pending_reports) }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Tracked Diseases <i class='bx bx-bug'></i></div>
+                <div class="kpi-value">{{ total_diseases }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Active Field Operators <i class='bx bx-group'></i></div>
+                <div class="kpi-value">{{ total_users }}</div>
+            </div>
+        </div>
+
+        <!-- Charts Layout -->
+        <div class="charts-grid">
+            <div class="chart-panel">
+                <h3>Disease Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="diseaseChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-panel">
+                <h3>Geographic Spread</h3>
+                <div class="chart-container">
+                    <canvas id="locationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Minimalist Chart Defaults
+    Chart.defaults.color = '#8A8B9D';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    
+    const baseOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { 
+                position: 'bottom', 
+                labels: { usePointStyle: true, padding: 20, font: {size: 11} }
+            }
+        }
+    };
+
+    // Color Palette matching CSS variables (Coral, Orange, Gold, Emerald, Purple)
+    const chartColors = ['#FF6B4A', '#FF9500', '#FFCC00', '#34C759', '#AF52DE'];
+
+    // Fetch Disease Data (limit to top 5 for cleaner donut)
+    fetch('/api/reports/by-disease')
+        .then(response => response.json())
+        .then(data => {
+            // Sort data to show top 5
+            const sortedIndices = data.data.map((val, idx) => idx).sort((a,b) => data.data[b] - data.data[a]).slice(0, 5);
+            const topLabels = sortedIndices.map(i => data.labels[i]);
+            const topData = sortedIndices.map(i => data.data[i]);
+            
+            new Chart(document.getElementById('diseaseChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: topLabels,
+                    datasets: [{
+                        data: topData,
+                        backgroundColor: chartColors,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: { ...baseOptions, cutout: '75%' }
+            });
+        });
+
+    // Fetch Location Data (limit to top 10 for bar chart)
+    fetch('/api/reports/by-location')
+        .then(response => response.json())
+        .then(data => {
+            const sortedIndices = data.data.map((val, idx) => idx).sort((a,b) => data.data[b] - data.data[a]).slice(0, 10);
+            const topLabels = sortedIndices.map(i => data.labels[i]);
+            const topData = sortedIndices.map(i => data.data[i]);
+
+            new Chart(document.getElementById('locationChart'), {
+                type: 'bar',
+                data: {
+                    labels: topLabels,
+                    datasets: [{
+                        label: 'Incidents',
+                        data: topData,
+                        backgroundColor: '#FF6B4A', /* Use coral accent */
+                        borderRadius: 4,
+                        barThickness: 10
+                    }]
+                },
+                options: {
+                    ...baseOptions,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: {size: 10} } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: {display: false} }
+                    }
+                }
+            });
+        });
+</script>
+{% endblock %}

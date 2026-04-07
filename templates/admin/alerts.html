@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <aside class="admin-sidebar glass-panel">
+        <ul class="admin-menu">
+            <li><a href="{{ url_for('admin.dashboard') }}"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+            <li><a href="{{ url_for('admin.reports') }}"><i class='bx bx-file'></i> All Reports</a></li>
+            <li><a href="{{ url_for('admin.diseases') }}"><i class='bx bx-bug'></i> Disease Registry</a></li>
+            <li><a href="{{ url_for('admin.alerts') }}" class="active"><i class='bx bx-bell'></i> Alert Thresholds</a></li>
+            <li><a href="{{ url_for('admin.users') }}"><i class='bx bx-group'></i> Operators</a></li>
+            <li><a href="{{ url_for('admin.audit') }}"><i class='bx bx-history'></i> Audit Log</a></li>
+        </ul>
+    </aside>
+
+    <div class="admin-content glass-panel">
+        <div class="page-header mb-4">
+            <h2>Automated Alert Thresholds</h2>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Pathogen Trigger</th>
+                        <th>Geographic Scope</th>
+                        <th>Incident Threshold</th>
+                        <th>System Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in alerts %}
+                    <tr>
+                        <td><strong class="text-warning">{{ a.disease }}</strong></td>
+                        <td><i class='bx bx-map'></i> {{ a.location or 'GLOBAL' }}</td>
+                        <td><span class="badge badge-severe">> {{ a.threshold }} Cases</span></td>
+                        <td>
+                            {% if a.is_active %}
+                                <span class="text-success"><i class='bx bx-check-circle'></i> Armed</span>
+                            {% else %}
+                                <span class="text-muted"><i class='bx bx-minus-circle'></i> Disarmed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
