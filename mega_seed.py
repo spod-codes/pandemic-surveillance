@@ -42,7 +42,7 @@ def generate_mega_data():
     with app.app_context():
         # First count how many exist
         current_count = Report.query.count()
-        target = 100000
+        target = 183760
         needed = target - current_count
         
         if needed <= 0:
