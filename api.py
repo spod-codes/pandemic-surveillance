@@ -23,12 +23,13 @@ def by_disease():
 
 @api_bp.route('/reports/by-location')
 def by_location():
+    # Use direct values for performance and memory optimization
     stats = db.session.query(
         Report.location_city,
         func.avg(Report.latitude),
         func.avg(Report.longitude),
         func.count(Report.id)
-    ).group_by(Report.location_city).filter(Report.location_city != None).all()
+    ).group_by(Report.location_city).filter(Report.location_city.isnot(None)).all()
     
     return jsonify({
         "labels": [row[0] or 'Unknown' for row in stats],
