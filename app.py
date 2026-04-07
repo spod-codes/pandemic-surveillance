@@ -43,6 +43,15 @@ def create_app():
     # ── Create tables ─────────────────────────────────────────────────────────
     with app.app_context():
         db.create_all()
+        
+        # Auto-create admin if database is empty
+        from models import User
+        if not User.query.first():
+            admin = User(username='admin', email='admin@surveillance.gov', role='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            print("Auto-seeded default admin account.")
 
     return app
 
